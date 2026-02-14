@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import OrderTrackingPage from "@/app/order/[id]/page";
+import type { MenuItem } from "@/types";
 
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
@@ -39,7 +40,7 @@ const mockOrder = {
   updatedAt: "2025-01-01T00:00:00.000Z",
 };
 
-const mockMenu = [
+const mockMenu: MenuItem[] = [
   {
     id: "pizza-1",
     name: "Margherita Pizza",

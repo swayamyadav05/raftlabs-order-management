@@ -9,8 +9,12 @@ import { CartSummary } from "@/components/cart/CartSummary";
 import { useCartContext } from "@/hooks/CartProvider";
 
 export default function CartPage() {
-  const { items, updateQuantity, removeItem, totalAmount, totalItems } =
+  const { items, updateQuantity, removeItem, totalAmount, totalItems, mounted } =
     useCartContext();
+
+  if (!mounted) {
+    return null;
+  }
 
   if (items.length === 0) {
     return (

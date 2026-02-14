@@ -1,7 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+} from "@testing-library/react";
 import { CheckoutForm } from "@/components/checkout/CheckoutForm";
-import type { MenuItem } from "@/types";
+import type { MenuItem, Order } from "@/types";
 
 const pizza: MenuItem = {
   id: "pizza-1",
@@ -37,7 +42,7 @@ vi.mock("@/hooks/CartProvider", () => ({
     items: mockCartItems,
     totalAmount: mockCartItems.reduce(
       (sum, i) => sum + i.menuItem.price * i.quantity,
-      0
+      0,
     ),
     clearCart: mockClearCart,
     mounted: true,
@@ -66,7 +71,11 @@ describe("Checkout flow", () => {
     vi.mocked(api.createOrder).mockResolvedValueOnce({
       id: "order-abc123",
       items: [{ menuItemId: "pizza-1", quantity: 2 }],
-      customer: { name: "John", address: "123 Main St", phone: "1234567890" },
+      customer: {
+        name: "John",
+        address: "123 Main St",
+        phone: "1234567890",
+      },
       status: "received",
       totalAmount: 25.98,
       createdAt: new Date().toISOString(),
@@ -78,14 +87,22 @@ describe("Checkout flow", () => {
     fireEvent.change(screen.getByPlaceholderText("Your full name"), {
       target: { value: "John Doe" },
     });
-    fireEvent.change(screen.getByPlaceholderText("Delivery address"), {
-      target: { value: "123 Main Street" },
-    });
-    fireEvent.change(screen.getByPlaceholderText("10-digit phone number"), {
-      target: { value: "1234567890" },
-    });
+    fireEvent.change(
+      screen.getByPlaceholderText("Delivery address"),
+      {
+        target: { value: "123 Main Street" },
+      },
+    );
+    fireEvent.change(
+      screen.getByPlaceholderText("10-digit phone number"),
+      {
+        target: { value: "1234567890" },
+      },
+    );
 
-    fireEvent.click(screen.getByRole("button", { name: /place order/i }));
+    fireEvent.click(
+      screen.getByRole("button", { name: /place order/i }),
+    );
 
     await waitFor(() => {
       expect(mockPush).toHaveBeenCalledWith("/order/order-abc123");
@@ -99,17 +116,19 @@ describe("Checkout flow", () => {
   it("shows validation errors and does NOT call API with invalid form", async () => {
     render(<CheckoutForm />);
 
-    fireEvent.click(screen.getByRole("button", { name: /place order/i }));
+    fireEvent.click(
+      screen.getByRole("button", { name: /place order/i }),
+    );
 
     await waitFor(() => {
       expect(
-        screen.getByText("Name must be at least 2 characters")
+        screen.getByText("Name must be at least 2 characters"),
       ).toBeInTheDocument();
       expect(
-        screen.getByText("Address must be at least 5 characters")
+        screen.getByText("Address must be at least 5 characters"),
       ).toBeInTheDocument();
       expect(
-        screen.getByText("Enter a valid 10-digit phone number")
+        screen.getByText("Enter a valid 10-digit phone number"),
       ).toBeInTheDocument();
     });
 
@@ -119,7 +138,7 @@ describe("Checkout flow", () => {
 
   it("shows API error message on failure", async () => {
     vi.mocked(api.createOrder).mockRejectedValueOnce(
-      new Error("Menu item not found")
+      new Error("Menu item not found"),
     );
 
     render(<CheckoutForm />);
@@ -127,17 +146,27 @@ describe("Checkout flow", () => {
     fireEvent.change(screen.getByPlaceholderText("Your full name"), {
       target: { value: "John Doe" },
     });
-    fireEvent.change(screen.getByPlaceholderText("Delivery address"), {
-      target: { value: "123 Main Street" },
-    });
-    fireEvent.change(screen.getByPlaceholderText("10-digit phone number"), {
-      target: { value: "1234567890" },
-    });
+    fireEvent.change(
+      screen.getByPlaceholderText("Delivery address"),
+      {
+        target: { value: "123 Main Street" },
+      },
+    );
+    fireEvent.change(
+      screen.getByPlaceholderText("10-digit phone number"),
+      {
+        target: { value: "1234567890" },
+      },
+    );
 
-    fireEvent.click(screen.getByRole("button", { name: /place order/i }));
+    fireEvent.click(
+      screen.getByRole("button", { name: /place order/i }),
+    );
 
     await waitFor(() => {
-      expect(screen.getByText("Menu item not found")).toBeInTheDocument();
+      expect(
+        screen.getByText("Menu item not found"),
+      ).toBeInTheDocument();
     });
 
     expect(mockPush).not.toHaveBeenCalled();
@@ -145,9 +174,12 @@ describe("Checkout flow", () => {
   });
 
   it("disables submit button while submitting", async () => {
-    let resolveOrder: (value: unknown) => void;
+    let resolveOrder: (value: Order | PromiseLike<Order>) => void;
     vi.mocked(api.createOrder).mockImplementationOnce(
-      () => new Promise((resolve) => { resolveOrder = resolve; })
+      () =>
+        new Promise((resolve) => {
+          resolveOrder = resolve;
+        }),
     );
 
     render(<CheckoutForm />);
@@ -155,18 +187,26 @@ describe("Checkout flow", () => {
     fireEvent.change(screen.getByPlaceholderText("Your full name"), {
       target: { value: "John Doe" },
     });
-    fireEvent.change(screen.getByPlaceholderText("Delivery address"), {
-      target: { value: "123 Main Street" },
-    });
-    fireEvent.change(screen.getByPlaceholderText("10-digit phone number"), {
-      target: { value: "1234567890" },
-    });
+    fireEvent.change(
+      screen.getByPlaceholderText("Delivery address"),
+      {
+        target: { value: "123 Main Street" },
+      },
+    );
+    fireEvent.change(
+      screen.getByPlaceholderText("10-digit phone number"),
+      {
+        target: { value: "1234567890" },
+      },
+    );
 
-    fireEvent.click(screen.getByRole("button", { name: /place order/i }));
+    fireEvent.click(
+      screen.getByRole("button", { name: /place order/i }),
+    );
 
     await waitFor(() => {
       expect(
-        screen.getByRole("button", { name: /placing order/i })
+        screen.getByRole("button", { name: /placing order/i }),
       ).toBeDisabled();
     });
 
@@ -174,7 +214,11 @@ describe("Checkout flow", () => {
     resolveOrder!({
       id: "order-abc",
       items: [],
-      customer: { name: "John", address: "123 Main St", phone: "1234567890" },
+      customer: {
+        name: "John",
+        address: "123 Main St",
+        phone: "1234567890",
+      },
       status: "received",
       totalAmount: 25.98,
       createdAt: new Date().toISOString(),
@@ -186,7 +230,11 @@ describe("Checkout flow", () => {
     vi.mocked(api.createOrder).mockResolvedValueOnce({
       id: "order-xyz",
       items: [{ menuItemId: "pizza-1", quantity: 2 }],
-      customer: { name: "Jane", address: "456 Oak Ave", phone: "9876543210" },
+      customer: {
+        name: "Jane",
+        address: "456 Oak Ave",
+        phone: "9876543210",
+      },
       status: "received",
       totalAmount: 25.98,
       createdAt: new Date().toISOString(),
@@ -198,14 +246,22 @@ describe("Checkout flow", () => {
     fireEvent.change(screen.getByPlaceholderText("Your full name"), {
       target: { value: "Jane Smith" },
     });
-    fireEvent.change(screen.getByPlaceholderText("Delivery address"), {
-      target: { value: "456 Oak Ave" },
-    });
-    fireEvent.change(screen.getByPlaceholderText("10-digit phone number"), {
-      target: { value: "9876543210" },
-    });
+    fireEvent.change(
+      screen.getByPlaceholderText("Delivery address"),
+      {
+        target: { value: "456 Oak Ave" },
+      },
+    );
+    fireEvent.change(
+      screen.getByPlaceholderText("10-digit phone number"),
+      {
+        target: { value: "9876543210" },
+      },
+    );
 
-    fireEvent.click(screen.getByRole("button", { name: /place order/i }));
+    fireEvent.click(
+      screen.getByRole("button", { name: /place order/i }),
+    );
 
     await waitFor(() => {
       expect(api.createOrder).toHaveBeenCalledWith({

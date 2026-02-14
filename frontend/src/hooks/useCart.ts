@@ -16,11 +16,11 @@ function loadCart(): CartItem[] {
 }
 
 export function useCart() {
-  const [items, setItems] = useState<CartItem[]>([]);
+  const [items, setItems] = useState<CartItem[]>(loadCart);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setItems(loadCart());
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 
@@ -32,12 +32,14 @@ export function useCart() {
 
   const addItem = useCallback((menuItem: MenuItem) => {
     setItems((prev) => {
-      const existing = prev.find((i) => i.menuItem.id === menuItem.id);
+      const existing = prev.find(
+        (i) => i.menuItem.id === menuItem.id,
+      );
       if (existing) {
         return prev.map((i) =>
           i.menuItem.id === menuItem.id
             ? { ...i, quantity: i.quantity + 1 }
-            : i
+            : i,
         );
       }
       return [...prev, { menuItem, quantity: 1 }];
@@ -45,20 +47,27 @@ export function useCart() {
   }, []);
 
   const removeItem = useCallback((menuItemId: string) => {
-    setItems((prev) => prev.filter((i) => i.menuItem.id !== menuItemId));
-  }, []);
-
-  const updateQuantity = useCallback((menuItemId: string, quantity: number) => {
-    if (quantity <= 0) {
-      setItems((prev) => prev.filter((i) => i.menuItem.id !== menuItemId));
-      return;
-    }
     setItems((prev) =>
-      prev.map((i) =>
-        i.menuItem.id === menuItemId ? { ...i, quantity } : i
-      )
+      prev.filter((i) => i.menuItem.id !== menuItemId),
     );
   }, []);
+
+  const updateQuantity = useCallback(
+    (menuItemId: string, quantity: number) => {
+      if (quantity <= 0) {
+        setItems((prev) =>
+          prev.filter((i) => i.menuItem.id !== menuItemId),
+        );
+        return;
+      }
+      setItems((prev) =>
+        prev.map((i) =>
+          i.menuItem.id === menuItemId ? { ...i, quantity } : i,
+        ),
+      );
+    },
+    [],
+  );
 
   const clearCart = useCallback(() => {
     setItems([]);
@@ -66,10 +75,13 @@ export function useCart() {
 
   const totalAmount = items.reduce(
     (sum, item) => sum + item.menuItem.price * item.quantity,
-    0
+    0,
   );
 
-  const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
+  const totalItems = items.reduce(
+    (sum, item) => sum + item.quantity,
+    0,
+  );
 
   return {
     items,
